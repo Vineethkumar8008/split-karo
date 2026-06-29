@@ -12,6 +12,8 @@ import AddExpenseForm from '../components/expenses/AddExpenseForm';
 import ExpenseHistoryItem from '../components/expenses/ExpenseHistoryItem';
 import BalanceCard from '../components/expenses/BalanceCard';
 import SettlementModal from '../components/modals/SettlementModal';
+import EditGroupModal from '../components/modals/EditGroupModal';
+import SuccessToast from '../components/ui/SuccessToast';
 
 const GroupPage = () => {
   const { groupId } = useParams();
@@ -25,6 +27,9 @@ const GroupPage = () => {
   const [balanceUsers, setBalanceUsers] = useState({});
   const [showSettlementModal, setShowSettlementModal] = useState(false);
   const [settlementData, setSettlementData] = useState(null);
+  const [showEditGroupModal, setShowEditGroupModal] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -141,6 +146,19 @@ const GroupPage = () => {
     setSettlementData(null);
   };
 
+  const handleEditGroupSuccess = async () => {
+    // Refresh group data
+    try {
+      const groupData = await getGroupById(groupId);
+      setGroup(groupData);
+      setSuccessMessage('Group members updated successfully!');
+      setShowSuccessToast(true);
+    } catch (error) {
+      console.error('Failed to refresh group:', error);
+    }
+    setShowEditGroupModal(false);
+  };
+
   const tabs = [
     {
       id: 'expenses',
@@ -199,7 +217,7 @@ const GroupPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <TopNavBar onCreateGroup={() => {}} />
-      <GroupHeader group={group} />
+      <GroupHeader group={group} onEditClick={() => setShowEditGroupModal(true)} />
 
       {/* Tabs */}
       <div className="bg-white border-b border-gray-200">
@@ -287,6 +305,21 @@ const GroupPage = () => {
         toUser={settlementData ? balanceUsers[settlementData.to] : null}
         groupId={groupId}
         onSuccess={handleSettlementConfirmed}
+      />
+
+      {/* Edit Group Modal */}
+      <EditGroupModal
+        isOpen={showEditGroupModal}
+        onClose={() => setShowEditGroupModal(false)}
+        group={group}
+        onSuccess={handleEditGroupSuccess}
+      />
+
+      {/* Success Toast */}
+      <SuccessToast
+        message={successMessage}
+        isVisible={showSuccessToast}
+        onClose={() => setShowSuccessToast(false)}
       />
     </div>
   );

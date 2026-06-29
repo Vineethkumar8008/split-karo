@@ -152,3 +152,29 @@ export const deleteGroup = async (groupId) => {
     throw error;
   }
 };
+
+/**
+ * Update group members
+ * @param {string} groupId - Group ID
+ * @param {Array<string>} memberIds - Array of new member UIDs
+ * @param {string} adminId - UID of group admin (may change if admin is being replaced)
+ * @returns {Promise<void>}
+ */
+export const updateGroupMembers = async (groupId, memberIds, adminId) => {
+  try {
+    const groupRef = doc(db, 'groups', groupId);
+
+    await updateDoc(groupRef, {
+      members: memberIds,
+      adminId: adminId,
+      updatedAt: serverTimestamp(),
+    });
+
+    console.log('Group members updated successfully:', groupId);
+  } catch (error) {
+    console.error('Update group members error:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
+    throw error;
+  }
+};
